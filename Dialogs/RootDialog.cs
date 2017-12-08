@@ -38,7 +38,7 @@
 
             if (sentimentAnalysis.Documents[0].Score < .5)
             {
-                await context.PostAsync(@"Sorry, I am not sure what you are looking for...  Please call 8675309. Or click this bad boy https://youtu.be/6WTdTwcmxyo?t=52");
+                await context.PostAsync(@"I am not sure what you are looking for...  Please call 8675309. Or click this bad boy https://youtu.be/6WTdTwcmxyo?t=52");
                 context.Wait(MessageReceivedAsync);
             }
             else
