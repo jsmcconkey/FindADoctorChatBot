@@ -4,6 +4,8 @@
     using System.Collections.Generic;
     using System.Threading;
     using System.Threading.Tasks;
+    using Microsoft.Azure.CognitiveServices.Language.TextAnalytics;
+    using Microsoft.Azure.CognitiveServices.Language.TextAnalytics.Models;
     using Microsoft.Bot.Builder.Dialogs;
     using Microsoft.Bot.Connector;
 
@@ -23,13 +25,32 @@
         {
             var message = await result;
 
-            if (message.Text.ToLower().Contains("help") || message.Text.ToLower().Contains("support") || message.Text.ToLower().Contains("problem"))
+            var client = new TextAnalyticsAPI();
+            client.AzureRegion = AzureRegions.Westcentralus;
+            client.SubscriptionKey = "103b80f43b844925b85446a4377e5146";
+
+            SentimentBatchResult sentimentAnalysis = client.Sentiment(
+                new MultiLanguageBatchInput(
+                    new List<MultiLanguageInput>()
+                    {
+                        new MultiLanguageInput("en", "1", message.Text)
+                    }));
+
+            if (sentimentAnalysis.Documents[0].Score < .5)
             {
-                await context.Forward(new SupportDialog(), this.ResumeAfterSupportDialog, message, CancellationToken.None);
+                await context.PostAsync(@"Sorry, I am not sure what you are looking for...  Please call 8675309. Or click this bad boy https://youtu.be/6WTdTwcmxyo?t=52");
+                context.Wait(MessageReceivedAsync);
             }
             else
             {
-                this.ShowOptions(context);
+                if (message.Text.ToLower().Contains("help") || message.Text.ToLower().Contains("support") || message.Text.ToLower().Contains("problem"))
+                {
+                    await context.Forward(new SupportDialog(), this.ResumeAfterSupportDialog, message, CancellationToken.None);
+                }
+                else
+                {
+                    this.ShowOptions(context);
+                }
             }
         }
 
